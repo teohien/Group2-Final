@@ -199,7 +199,6 @@ int idx = 4;
 I2C_HandleTypeDef hi2c1;
 
 TIM_HandleTypeDef htim1;
-TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
 DMA_HandleTypeDef hdma_usart1_tx;
@@ -228,7 +227,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_TIM1_Init(void);
-static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
 static void MX_I2C1_Init(void);
 void StartDefaultTask(void const * argument);
@@ -248,21 +246,6 @@ void Uart_ThresholdTask(void const * argument);
 // Nhận UART
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size);
 
-// Xử lý lệnh UART
-void processRecCmd(size_t len);
-
-// Truyen du lieu DHT11 qua UART
-void DHT11_UART_Transmit(void);
-
-// Truyen du lieu HSR04 qua UART
-void HCSR04_UART_Transmit(void);
-
-// Truyen du lieu DHT11 và HSR04 qua UART
-void DHT11_HSR04_UART_Transmit(void);
-
-void Temp_HCSR04_UART_Transmit(void);
-
-void Humi_HCSR04_UART_Transmit(void);
 
 // Delay microsecond
 void delay_us(uint16_t time);
@@ -292,9 +275,7 @@ void Read_DHT11_Sensor(void);
 // �?�?c cảm biến HCSR04
 void Read_HCSR04_Sensor(void);
 
-void Temp_UART_Transmit(void);
 
-void Humi_UART_Transmit(void);
 
 /* USER CODE END PFP */
 
@@ -370,187 +351,7 @@ void Read_HCSR04_Sensor(void)
 	__HAL_TIM_ENABLE_IT(&htim1, TIM_IT_CC1);
 }
 
-// void LCD_Display(void){
-// 	sprintf(data_line_1,"TEMP HUMI DIST");
-// 	sprintf(data_line_2,"%dC %d  %d", (int)temp, (int)humi,(int)distance);
-// 	lcd16x2_1stLine();
-// 	lcd16x2_printf(data_line_1);
-// 	lcd16x2_2ndLine();
-// 	lcd16x2_printf(data_line_2);
-// }
 
-void DHT11_UART_Transmit(void){
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	new_tick = HAL_GetTick();
-	sprintf((char*)TxBuffer, "\nTemperature: %doC, Humidity: %d%% %d\n", (int) temp, (int) humi, (int) (new_tick - old_tick));
-	old_tick = new_tick;
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-}
-
-void Temp_UART_Transmit(void){
-	new_tick = HAL_GetTick();
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\nTemperature: %doC : %d\n", (int) temp, (int)(new_tick - old_tick));
-	old_tick = new_tick;
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-}
-
-void Humi_UART_Transmit(void){
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\nHumidity: %d%%\n", (int) humi);
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-}
-
-void Humi_HCSR04_UART_Transmit(void){
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\nHumidity: %d%%, Distance: %d cm\n", (int) humi, (int) distance);
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-}
-
-void Temp_HCSR04_UART_Transmit(void){
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\nTemperature: %doC, Distance: %d cm\n", (int) temp, (int) distance);
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-}
-
-void HCSR04_UART_Transmit(void){
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\nDistance: %d cm\n", (int)distance);
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-
-}
-
-void DHT11_HCSR04_UART_Transmit(void){
-	memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\nTemperature: %doC, Humidity: %d%%, Distance: %d cm, Time: %d\n", (int) temp, (int) humi, (int)distance, (int)HAL_GetTick());
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
-	HAL_UART_Transmit_DMA(&huart1, TxBuffer, len);
-}
-
-void processRecCmd(size_t len){
-	if(MainBuffer[0] != 0x00 || MainBuffer[len-1] != 0x08){
-		return;
-	};
-
-	uint8_t cmd_type = MainBuffer[cmd_index]; // MainBuffer[1]
-
-	switch (cmd_type) {
-		case 0x02:
-			/* some codes */
-			uart_enable_cmd_2_tmp = true;
-			uart_enable_cmd_1_tmp = false;
-			button_enable = 0;
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
-			isr_cnt = 0;
-			temp_cnt = 0;
-			humi_cnt = 0;
-			dist_cnt = 0;
-			transmit_DHT11_data_flag = 0;
-			transmit_temp_data_flag = 0;
-			transmit_humi_data_flag = 0;
-			transmit_dist_data_flag = 0;
-			transmit_DHT11_HCSR04_data_flag = 0;
-			transmit_temp_HCSR04_data_flag = 0;
-			transmit_humi_HCSR04_data_flag = 0;
-
-			isDistTrans = 0;
-			isHumiTrans = 0;
-
-			temp_threshold = MainBuffer[5];
-			humi_threshold = MainBuffer[6];
-			dist_threshold = MainBuffer[7];
-			if(MainBuffer[2] == 0x01){
-				temp_transmit_period = 1;
-			}
-			else temp_transmit_period = 0;
-
-			if(MainBuffer[3] == 0x01){
-				humi_transmit_period = 1;
-			}
-			else humi_transmit_period = 0;
-
-			if(MainBuffer[4] == 0x01){
-				HCSR04_transmit_period = 1;
-			}
-			else HCSR04_transmit_period = 0;
-
-		  break;
-
-		case 0x01:
-			/* some codes */
-			uart_enable_cmd_1_tmp = true;
-			uart_enable_cmd_2_tmp = false;
-			button_enable = true;
-			/* Xoa thong so cai dat tu nut nhan */
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
-			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
-			isr_cnt = 0;
-
-			/* Xoa cac co cho phep */
-			transmit_DHT11_data_flag = 0;
-			transmit_temp_data_flag = 0;
-			transmit_humi_data_flag = 0;
-			transmit_dist_data_flag = 0;
-			transmit_DHT11_HCSR04_data_flag = 0;
-			transmit_temp_HCSR04_data_flag = 0;
-			transmit_humi_HCSR04_data_flag = 0;
-
-			isDistTrans = 0;
-			isHumiTrans = 0;
-
-			/* Dat cac thong so cai dat tu lenh UART */
-			temp_transmit_period = MainBuffer[2];
-			humi_transmit_period = MainBuffer[3];
-			HCSR04_transmit_period = MainBuffer[4];
-			temp_threshold = MainBuffer[5];
-			humi_threshold = MainBuffer[6];
-			dist_threshold = MainBuffer[7];
-			temp_cnt = 0;
-			humi_cnt = 0;
-			dist_cnt = 0;
-		  break;
-
-		default:
-		  break;
-	}
-}
 
 void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	if(huart->Instance == USART1){
@@ -569,99 +370,7 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	}
 }
 
-// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-// {
-//   // Check which version of the timer triggered this callback and toggle LED
-//   isr_tick_start = HAL_GetTick();
-//   if (htim == &htim4)
-//   {
-// 	  old_task_idx = task_idx;
-// 	  task_idx++;
-// 	  __HAL_TIM_SET_AUTORELOAD(&htim4, execute_time[task_idx]);
-// 	  //htim4.Init.Period = execute_time[task_idx];
-// 	  __HAL_TIM_SET_COUNTER(&htim4,0);
-// 	  if(queue[old_task_idx] == Read_DHT11_Sensor){
-// 		  read_DHT11_flag = true;
-// 	  }
-// 	  else if(queue[old_task_idx] == Read_HCSR04_Sensor){
-// 		  read_HCSR04_flag = true;
-// 	  }
-// 	  // else if(queue[old_task_idx] == LCD_Display){
-// 		//   lcd_display_flag = true;
-// 	  // }
-// 	  else if(queue[old_task_idx] == DHT11_UART_Transmit){
-// 		  humi_cnt++;
-// 		  temp_cnt++;
-// 		  dist_cnt++;
 
-// 		  if(uart_enable_cmd_1_tmp){
-// 			  uart_enable_cmd_1 = true;
-// 		  }
-// 		  else{
-// 			  uart_enable_cmd_1 = false;
-// 		  }
-
-// 		  if(uart_enable_cmd_2_tmp){
-// 			  uart_enable_cmd_2 = true;
-// 		  }
-// 		  else{
-// 			  uart_enable_cmd_2 = false;
-// 		  }
-
-// 		  if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((humi_cnt - 1) % humi_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0 && temp_transmit_period != 0 && humi_transmit_period !=0 && HCSR04_transmit_period != 0){
-// 			  transmit_DHT11_HCSR04_data_flag = true;
-// 			  isHumiTrans = true;
-// 			  isDistTrans = true;
-// 		  }
-// 		  else if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((humi_cnt - 1) % humi_transmit_period) == 0 && temp_transmit_period != 0 && humi_transmit_period != 0){
-// 			  transmit_DHT11_data_flag = true;
-// 			  isHumiTrans = true;
-// 		  }
-// 		  else if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0 && temp_transmit_period !=0 && HCSR04_transmit_period != 0){
-// 			  transmit_temp_HCSR04_data_flag = true;
-// 			  isDistTrans = true;
-// 		  }
-// 		  else if(((temp_cnt - 1) % temp_transmit_period) == 0  && temp_transmit_period != 0){
-// 			  transmit_temp_data_flag = true;
-// 			  isDistTrans = false;
-// 			  isHumiTrans = false;
-
-// 		  }
-
-// 		  if(((humi_cnt - 1) % humi_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0  && HCSR04_transmit_period != 0 && humi_transmit_period !=0){
-// 			  if(isHumiTrans == false && isDistTrans == false){
-// 				  transmit_humi_HCSR04_data_flag = true;
-// 				  isDistTrans = true;
-// 			  }
-// 		  }
-// 		  else if(((humi_cnt - 1) % humi_transmit_period) == 0  && humi_transmit_period !=0){
-// 			  if(isHumiTrans == false) transmit_humi_data_flag = true;
-// 		  }
-
-// 		  if(((dist_cnt - 1) % HCSR04_transmit_period) == 0  && HCSR04_transmit_period != 0){
-// 			  if(isDistTrans == false) transmit_dist_data_flag = true;
-// 		  }
-// 	  }
-// 	  if(task_idx == 45){
-// 	  	  task_idx = 0;
-// 	  }
-//   }
-//   isr_tick_stop = HAL_GetTick();
-//   isr_execute_tick = isr_tick_stop - isr_tick_start;
-
-// }
-void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
-{
-  /* USER CODE BEGIN Callback 0 */
-
-  /* USER CODE END Callback 0 */
-  if (htim->Instance == TIM3) {
-    HAL_IncTick();
-  }
-  /* USER CODE BEGIN Callback 1 */
-
-  /* USER CODE END Callback 1 */
-}
 
 void Set_Pin_Output (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
 {
@@ -779,7 +488,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_TIM1_Init();
-  MX_TIM4_Init();
   MX_USART1_UART_Init();
   MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
@@ -790,9 +498,8 @@ int main(void)
 	CLCD_I2C_WriteString(&LCD1,"Humi");
 	CLCD_I2C_SetCursor(&LCD1, 12, 0);
 	CLCD_I2C_WriteString(&LCD1,"Dist");
-  HAL_TIM_Base_Start_IT(&htim4);
+
   HAL_TIM_Base_Start(&htim1);
-  __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
   HAL_TIM_IC_Start_IT(&htim1, TIM_CHANNEL_1);
   HAL_UARTEx_ReceiveToIdle_DMA(&huart1, RxBuffer, MainBuff_SIZE);
   __HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
@@ -1003,51 +710,6 @@ static void MX_TIM1_Init(void)
   /* USER CODE BEGIN TIM1_Init 2 */
 
   /* USER CODE END TIM1_Init 2 */
-
-}
-
-/**
-  * @brief TIM4 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_TIM4_Init(void)
-{
-
-  /* USER CODE BEGIN TIM4_Init 0 */
-
-  /* USER CODE END TIM4_Init 0 */
-
-  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
-  TIM_MasterConfigTypeDef sMasterConfig = {0};
-
-  /* USER CODE BEGIN TIM4_Init 1 */
-
-  /* USER CODE END TIM4_Init 1 */
-  htim4.Instance = TIM4;
-  htim4.Init.Prescaler = 7200 - 1;
-  htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 50000;
-  htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
-  htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
-  if (HAL_TIM_Base_Init(&htim4) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
-  if (HAL_TIM_ConfigClockSource(&htim4, &sClockSourceConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  sMasterConfig.MasterOutputTrigger = TIM_TRGO_RESET;
-  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
-  if (HAL_TIMEx_MasterConfigSynchronization(&htim4, &sMasterConfig) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN TIM4_Init 2 */
-
-  /* USER CODE END TIM4_Init 2 */
 
 }
 
@@ -1298,13 +960,14 @@ void LCDTask(void const * argument)
     osMailFree(myQueueDataHandle, data);
     Recv_Task_data = osMailGet(myQueueDataHandle, 0);
 // Xử lý hiển thị
-    }
-
-    Lcd_temp = temp_lcd;
-    Lcd_humi = humi_lcd;
-    Lcd_dist = dist_lcd;
-
-   sprintf(x,"%d",temp_lcd); 
+	CLCD_I2C_Clear(&LCD1);
+	CLCD_I2C_SetCursor(&LCD1, 0, 0);
+	CLCD_I2C_WriteString(&LCD1,"Temp");
+	CLCD_I2C_SetCursor(&LCD1, 6, 0);
+	CLCD_I2C_WriteString(&LCD1,"Humi");
+	CLCD_I2C_SetCursor(&LCD1, 12, 0);
+	CLCD_I2C_WriteString(&LCD1,"Dist");
+	sprintf(x,"%d",temp_lcd); 
 	CLCD_I2C_SetCursor(&LCD1, 0, 1);
 	CLCD_I2C_WriteString(&LCD1,x);
   sprintf(x,"%d",humi_lcd); 
@@ -1313,7 +976,13 @@ void LCDTask(void const * argument)
   sprintf(x,"%d",dist_lcd);
 	CLCD_I2C_SetCursor(&LCD1, 12, 1);
 	CLCD_I2C_WriteString(&LCD1,x);
-  osDelay(1000);
+    }
+
+    Lcd_temp = temp_lcd;
+    Lcd_humi = humi_lcd;
+    Lcd_dist = dist_lcd;
+
+  osDelay(500);
   }
 }
 // // Task xử lý khi nhân được ngắt UART
@@ -1331,6 +1000,7 @@ void UARTTask(void const * argument)
 
 
 // // �?ưa các biến Command; Frequency; Threshold vào Queue2 để các task khác xử lý
+if( MainBuffer[8] == 0x08){
 
 // // �?ưa các biến Command; Frequency; Threshold vào Queue2 để các task khác xử lý
     cnt_uart = MainBuffer[2];
@@ -1344,13 +1014,11 @@ void UARTTask(void const * argument)
      msg->Threshold[2] = MainBuffer[7];         // Ngưỡng khoảng cách
      osMailPut(myQueueUart_ThresholdHandle, msg);
 		
-		// // Xử lý command    
-    HAL_UARTEx_ReceiveToIdle_DMA(&huart1, RxBuffer, MainBuff_SIZE);
-		__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
 
 			}
-
-
+    HAL_UARTEx_ReceiveToIdle_DMA(&huart1, RxBuffer, MainBuff_SIZE);
+		__HAL_DMA_DISABLE_IT(&hdma_usart1_rx, DMA_IT_HT);
+  }
 }
 /* DHTTask */
 void DHTTask(void const * argument)
@@ -1400,9 +1068,9 @@ void DHTTask(void const * argument)
 // /* Task xử lý ngưỡng */
 void Uart_ThresholdTask(void const * argument)
 {
-  uint32_t Frequency_Temp = 5000;
-  uint32_t Frequency_Humi = 2000;
-  uint32_t Frequency_Dist = 3000;
+  uint32_t Frequency_Temp = 2000;
+  uint32_t Frequency_Humi = 4000;
+  uint32_t Frequency_Dist = 6000;
 	
   uint32_t Threshold_Temp = 100;
   uint32_t Threshold_Humi = 100;
@@ -1420,7 +1088,7 @@ void Uart_ThresholdTask(void const * argument)
 
   uint32_t time_temp = 0;
   uint32_t time_humi = 0;
-  uint32_t time_distance = 0;
+  uint32_t time_dist = 0;
   
   osEvent Recv_Task_data_uart;  // nhận dữ liệu từ myQueueUart_ThresholdHandle
   osEvent Recv_Task_data; // nhận dữ liệu từ DHT và HCSR
@@ -1455,6 +1123,13 @@ void Uart_ThresholdTask(void const * argument)
         // nhận xong phải giải phóng
         osMailFree(myQueueUart_ThresholdHandle, data);
         Recv_Task_data_uart = osMailGet(myQueueUart_ThresholdHandle, 0);
+
+        time_temp = 0;
+        time_humi = 0;
+        time_dist = 0;
+        Frequency_Temp = Frequency_Temp*1000;              // chu kì nhiệt độ DHT
+        Frequency_Humi = Frequency_Humi*1000;              // chu kì độ ẩm DHT
+        Frequency_Dist = Frequency_Dist*1000;              // chu kì khoảng cách
     }
 
     cnt_uart_rei = Frequency_Temp;
@@ -1518,64 +1193,60 @@ void Uart_ThresholdTask(void const * argument)
     Threshold_hum = humi1;
     Threshold_dist = dist1;
 
-if((xTaskGetTickCount() - time_temp) > Frequency_Temp -4 ) // gửi sau chu kì Frequency_Dist
+if(((xTaskGetTickCount() - time_temp) > Frequency_Temp -6) && ((xTaskGetTickCount() - time_humi) > Frequency_Humi -6) && ((xTaskGetTickCount() - time_dist) > Frequency_Dist -6) ) // gửi sau chu kì Frequency_Dist
+    {    
+      time_temp = xTaskGetTickCount();
+      time_humi = time_temp;
+      time_dist = time_temp;
+  memset(TxBuffer, 0, TransmitBuff_SIZE);
+	sprintf((char*)TxBuffer, "\nTemperature: %doC , Humidity: %d%% , Distance: %d , time: %d \n", (int) temp1, (int) humi1, (int) dist1,(int) (time_temp));
+	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
+    }
+else if (((xTaskGetTickCount() - time_temp) > Frequency_Temp -6) && ((xTaskGetTickCount() - time_humi) > Frequency_Humi -6)  ) // gửi sau chu kì Frequency_Dist
+    {    
+      time_temp = xTaskGetTickCount();
+      time_humi = time_temp;
+  memset(TxBuffer, 0, TransmitBuff_SIZE);
+	sprintf((char*)TxBuffer, "\nTemperature: %doC , Humidity: %d%% , time: %d \n", (int) temp1, (int) humi1,(int) (time_temp));
+	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
+    }
+else if (((xTaskGetTickCount() - time_temp) > Frequency_Temp -6) && ((xTaskGetTickCount() - time_dist) > Frequency_Dist -6) ) // gửi sau chu kì Frequency_Dist
+    {    
+      time_temp = xTaskGetTickCount();
+      time_dist = time_temp;
+  memset(TxBuffer, 0, TransmitBuff_SIZE);
+	sprintf((char*)TxBuffer, "\nTemperature: %doC , Distance: %d , time: %d \n", (int) temp1, (int) dist1,(int) (time_temp));
+	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
+    }
+else if (((xTaskGetTickCount() - time_humi) > Frequency_Humi -6) && ((xTaskGetTickCount() - time_dist) > Frequency_Dist -6) ) // gửi sau chu kì Frequency_Dist
+    {    
+      time_humi = xTaskGetTickCount();
+      time_dist = time_humi;
+  memset(TxBuffer, 0, TransmitBuff_SIZE);
+	sprintf((char*)TxBuffer, "\nHumidity: %d%% , Distance: %d , time: %d \n",(int) humi1, (int) dist1,(int) (time_humi));
+	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
+    }
+else if((xTaskGetTickCount() - time_temp) > Frequency_Temp - 6) // gửi sau chu kì Frequency_Dist
     {    
       time_temp = xTaskGetTickCount();
   memset(TxBuffer, 0, TransmitBuff_SIZE);
-	sprintf((char*)TxBuffer, "\n Temperature: %doC , Humidity: %d%% , Distance: %d , time: %d \n", (int) temp1, (int) humi1, (int) dist1,(int) (time_temp));
-	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-		if(TxBuffer[i] == '\0'){
-			len = i + 1;
-		}
-	}
+	sprintf((char*)TxBuffer, "\nTemperature: %doC , time: %d \n", (int) temp1,(int) (time_temp));
 	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-
     }
-
-
-// // Xử lý Uart
-//     if((xTaskGetTickCount() - time_temp) > Frequency_Temp -2 ) // gửi sau chu kì Frequency_Dist
-//     {    
-//       time_temp = xTaskGetTickCount();
-//   memset(TxBuffer, 0, TransmitBuff_SIZE);
-// 	sprintf((char*)TxBuffer, "\n Temperature: %doC , time: %d \n", (int) temp1,(int) (time_temp));
-// 	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-// 		if(TxBuffer[i] == '\0'){
-// 			len = i + 1;
-// 		}
-// 	}
-// 	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-
-//     }
-
-//     if((xTaskGetTickCount() - time_humi) > Frequency_Humi -2 ) // gửi sau chu kì Frequency_Dist
-//     {    
-//       time_humi = xTaskGetTickCount();
-//   memset(TxBuffer, 0, TransmitBuff_SIZE);
-// 	sprintf((char*)TxBuffer, "\n  Humidity: %d%% , time: %d \n", (int) humi1,(int) (time_humi));
-// 	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-// 		if(TxBuffer[i] == '\0'){
-// 			len = i + 1;
-// 		}
-// 	}
-// 	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-
-//     }
-
-//     if((xTaskGetTickCount() - time_distance) > Frequency_Dist -2 ) // gửi sau chu kì Frequency_Dist
-//     {    
-//       time_distance = xTaskGetTickCount();
-//   memset(TxBuffer, 0, TransmitBuff_SIZE);
-// 	sprintf((char*)TxBuffer, "\n  Distance: %d , time: %d \n", (int) dist1,(int) (time_distance));
-// 	for(size_t i = 0; i < sizeof(TxBuffer); i++){
-// 		if(TxBuffer[i] == '\0'){
-// 			len = i + 1;
-// 		}
-// 	}
-// 	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
-
-//     }
-
+else if((xTaskGetTickCount() - time_humi) > Frequency_Humi - 6 ) // gửi sau chu kì Frequency_Dist
+    {    
+      time_humi = xTaskGetTickCount();
+  memset(TxBuffer, 0, TransmitBuff_SIZE);
+	sprintf((char*)TxBuffer, "\nHumidity: %d%% , time: %d \n", (int) humi1,(int) (time_humi));
+	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
+    }
+else if((xTaskGetTickCount() - time_dist) > Frequency_Dist - 6) // gửi sau chu kì Frequency_Dist
+    {    
+      time_dist = xTaskGetTickCount();
+  memset(TxBuffer, 0, TransmitBuff_SIZE);
+	sprintf((char*)TxBuffer, "\nDistance: %d , time: %d \n", (int) dist1,(int) (time_dist));
+	HAL_UART_Transmit_DMA(&huart1, TxBuffer, sizeof(TxBuffer));
+    }
     osDelay(100);
 }
 }
@@ -1609,7 +1280,18 @@ void StartDefaultTask(void const * argument)
   * @param  htim : TIM handle
   * @retval None
   */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
 
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM3) {
+    HAL_IncTick();
+  }
+  /* USER CODE BEGIN Callback 1 */
+
+  /* USER CODE END Callback 1 */
+}
 
 /**
   * @brief  This function is executed in case of error occurrence.

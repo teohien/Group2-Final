@@ -43,7 +43,7 @@ es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
 es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
-es_design\main.o: .\LCD\CLCD_I2C.h
+es_design\main.o: ./LCD/CLCD_I2C.h
 es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\stdio.h
 es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\string.h
 es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\math.h
