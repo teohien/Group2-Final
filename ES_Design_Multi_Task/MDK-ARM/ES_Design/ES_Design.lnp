@@ -31,7 +31,7 @@
 "es_design\cmsis_os.o"
 "es_design\heap_4.o"
 "es_design\port.o"
-"es_design\lcd16x2.o"
+"es_design\clcd_i2c.o"
 --strict --scatter "ES_Design\ES_Design.sct"
 --summary_stderr --info summarysizes --map --load_addr_map_info --xref --callgraph --symbols
 --info sizes --info totals --info unused --info veneers

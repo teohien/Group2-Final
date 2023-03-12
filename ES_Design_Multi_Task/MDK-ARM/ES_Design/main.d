@@ -24,6 +24,7 @@ es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_dma_ex.h
 es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_cortex.h
 es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash.h
 es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_flash_ex.h
+es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_i2c.h
 es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_pwr.h
 es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim.h
 es_design\main.o: ../Drivers/STM32F1xx_HAL_Driver/Inc/stm32f1xx_hal_tim_ex.h
@@ -42,8 +43,8 @@ es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/timers.h
 es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/queue.h
 es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/semphr.h
 es_design\main.o: ../Middlewares/Third_Party/FreeRTOS/Source/include/event_groups.h
-es_design\main.o: ../Core/Inc/lcd16x2.h
-es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\stdbool.h
+es_design\main.o: .\LCD\CLCD_I2C.h
 es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\stdio.h
 es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\string.h
 es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\math.h
+es_design\main.o: E:\Keilc V5\ARM\ARMCC\Bin\..\include\stdbool.h

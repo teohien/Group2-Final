@@ -22,11 +22,12 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "lcd16x2.h"
+#include "CLCD_I2C.h"
 #include <stdio.h>
 #include <string.h>
 #include <math.h>
 #include <stdbool.h>
+uint32_t a = 0;
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -195,6 +196,8 @@ int idx = 4;
 /* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
+I2C_HandleTypeDef hi2c1;
+
 TIM_HandleTypeDef htim1;
 TIM_HandleTypeDef htim4;
 
@@ -227,10 +230,11 @@ static void MX_DMA_Init(void);
 static void MX_TIM1_Init(void);
 static void MX_TIM4_Init(void);
 static void MX_USART1_UART_Init(void);
+static void MX_I2C1_Init(void);
 void StartDefaultTask(void const * argument);
 
 /* USER CODE BEGIN PFP */
-
+CLCD_I2C_Name LCD1;
 void ButtonTask(void const * argument);
 void HCSR04Task(void const * argument);
 void LCDTask(void const * argument);
@@ -565,86 +569,98 @@ void HAL_UARTEx_RxEventCallback(UART_HandleTypeDef *huart, uint16_t Size){
 	}
 }
 
+// void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+// {
+//   // Check which version of the timer triggered this callback and toggle LED
+//   isr_tick_start = HAL_GetTick();
+//   if (htim == &htim4)
+//   {
+// 	  old_task_idx = task_idx;
+// 	  task_idx++;
+// 	  __HAL_TIM_SET_AUTORELOAD(&htim4, execute_time[task_idx]);
+// 	  //htim4.Init.Period = execute_time[task_idx];
+// 	  __HAL_TIM_SET_COUNTER(&htim4,0);
+// 	  if(queue[old_task_idx] == Read_DHT11_Sensor){
+// 		  read_DHT11_flag = true;
+// 	  }
+// 	  else if(queue[old_task_idx] == Read_HCSR04_Sensor){
+// 		  read_HCSR04_flag = true;
+// 	  }
+// 	  // else if(queue[old_task_idx] == LCD_Display){
+// 		//   lcd_display_flag = true;
+// 	  // }
+// 	  else if(queue[old_task_idx] == DHT11_UART_Transmit){
+// 		  humi_cnt++;
+// 		  temp_cnt++;
+// 		  dist_cnt++;
+
+// 		  if(uart_enable_cmd_1_tmp){
+// 			  uart_enable_cmd_1 = true;
+// 		  }
+// 		  else{
+// 			  uart_enable_cmd_1 = false;
+// 		  }
+
+// 		  if(uart_enable_cmd_2_tmp){
+// 			  uart_enable_cmd_2 = true;
+// 		  }
+// 		  else{
+// 			  uart_enable_cmd_2 = false;
+// 		  }
+
+// 		  if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((humi_cnt - 1) % humi_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0 && temp_transmit_period != 0 && humi_transmit_period !=0 && HCSR04_transmit_period != 0){
+// 			  transmit_DHT11_HCSR04_data_flag = true;
+// 			  isHumiTrans = true;
+// 			  isDistTrans = true;
+// 		  }
+// 		  else if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((humi_cnt - 1) % humi_transmit_period) == 0 && temp_transmit_period != 0 && humi_transmit_period != 0){
+// 			  transmit_DHT11_data_flag = true;
+// 			  isHumiTrans = true;
+// 		  }
+// 		  else if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0 && temp_transmit_period !=0 && HCSR04_transmit_period != 0){
+// 			  transmit_temp_HCSR04_data_flag = true;
+// 			  isDistTrans = true;
+// 		  }
+// 		  else if(((temp_cnt - 1) % temp_transmit_period) == 0  && temp_transmit_period != 0){
+// 			  transmit_temp_data_flag = true;
+// 			  isDistTrans = false;
+// 			  isHumiTrans = false;
+
+// 		  }
+
+// 		  if(((humi_cnt - 1) % humi_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0  && HCSR04_transmit_period != 0 && humi_transmit_period !=0){
+// 			  if(isHumiTrans == false && isDistTrans == false){
+// 				  transmit_humi_HCSR04_data_flag = true;
+// 				  isDistTrans = true;
+// 			  }
+// 		  }
+// 		  else if(((humi_cnt - 1) % humi_transmit_period) == 0  && humi_transmit_period !=0){
+// 			  if(isHumiTrans == false) transmit_humi_data_flag = true;
+// 		  }
+
+// 		  if(((dist_cnt - 1) % HCSR04_transmit_period) == 0  && HCSR04_transmit_period != 0){
+// 			  if(isDistTrans == false) transmit_dist_data_flag = true;
+// 		  }
+// 	  }
+// 	  if(task_idx == 45){
+// 	  	  task_idx = 0;
+// 	  }
+//   }
+//   isr_tick_stop = HAL_GetTick();
+//   isr_execute_tick = isr_tick_stop - isr_tick_start;
+
+// }
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
-  // Check which version of the timer triggered this callback and toggle LED
-  isr_tick_start = HAL_GetTick();
-  if (htim == &htim4)
-  {
-	  old_task_idx = task_idx;
-	  task_idx++;
-	  __HAL_TIM_SET_AUTORELOAD(&htim4, execute_time[task_idx]);
-	  //htim4.Init.Period = execute_time[task_idx];
-	  __HAL_TIM_SET_COUNTER(&htim4,0);
-	  if(queue[old_task_idx] == Read_DHT11_Sensor){
-		  read_DHT11_flag = true;
-	  }
-	  else if(queue[old_task_idx] == Read_HCSR04_Sensor){
-		  read_HCSR04_flag = true;
-	  }
-	  // else if(queue[old_task_idx] == LCD_Display){
-		//   lcd_display_flag = true;
-	  // }
-	  else if(queue[old_task_idx] == DHT11_UART_Transmit){
-		  humi_cnt++;
-		  temp_cnt++;
-		  dist_cnt++;
+  /* USER CODE BEGIN Callback 0 */
 
-		  if(uart_enable_cmd_1_tmp){
-			  uart_enable_cmd_1 = true;
-		  }
-		  else{
-			  uart_enable_cmd_1 = false;
-		  }
-
-		  if(uart_enable_cmd_2_tmp){
-			  uart_enable_cmd_2 = true;
-		  }
-		  else{
-			  uart_enable_cmd_2 = false;
-		  }
-
-		  if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((humi_cnt - 1) % humi_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0 && temp_transmit_period != 0 && humi_transmit_period !=0 && HCSR04_transmit_period != 0){
-			  transmit_DHT11_HCSR04_data_flag = true;
-			  isHumiTrans = true;
-			  isDistTrans = true;
-		  }
-		  else if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((humi_cnt - 1) % humi_transmit_period) == 0 && temp_transmit_period != 0 && humi_transmit_period != 0){
-			  transmit_DHT11_data_flag = true;
-			  isHumiTrans = true;
-		  }
-		  else if(((temp_cnt - 1) % temp_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0 && temp_transmit_period !=0 && HCSR04_transmit_period != 0){
-			  transmit_temp_HCSR04_data_flag = true;
-			  isDistTrans = true;
-		  }
-		  else if(((temp_cnt - 1) % temp_transmit_period) == 0  && temp_transmit_period != 0){
-			  transmit_temp_data_flag = true;
-			  isDistTrans = false;
-			  isHumiTrans = false;
-
-		  }
-
-		  if(((humi_cnt - 1) % humi_transmit_period) == 0 && ((dist_cnt - 1) % HCSR04_transmit_period) == 0  && HCSR04_transmit_period != 0 && humi_transmit_period !=0){
-			  if(isHumiTrans == false && isDistTrans == false){
-				  transmit_humi_HCSR04_data_flag = true;
-				  isDistTrans = true;
-			  }
-		  }
-		  else if(((humi_cnt - 1) % humi_transmit_period) == 0  && humi_transmit_period !=0){
-			  if(isHumiTrans == false) transmit_humi_data_flag = true;
-		  }
-
-		  if(((dist_cnt - 1) % HCSR04_transmit_period) == 0  && HCSR04_transmit_period != 0){
-			  if(isDistTrans == false) transmit_dist_data_flag = true;
-		  }
-	  }
-	  if(task_idx == 45){
-	  	  task_idx = 0;
-	  }
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM3) {
+    HAL_IncTick();
   }
-  isr_tick_stop = HAL_GetTick();
-  isr_execute_tick = isr_tick_stop - isr_tick_start;
+  /* USER CODE BEGIN Callback 1 */
 
+  /* USER CODE END Callback 1 */
 }
 
 void Set_Pin_Output (GPIO_TypeDef *GPIOx, uint16_t GPIO_Pin)
@@ -765,58 +781,15 @@ int main(void)
   MX_TIM1_Init();
   MX_TIM4_Init();
   MX_USART1_UART_Init();
+  MX_I2C1_Init();
   /* USER CODE BEGIN 2 */
-    queue[0] = Read_HCSR04_Sensor;
-  queue[1] = Read_DHT11_Sensor;
-  queue[4] = DHT11_UART_Transmit;
-  queue[15] = DHT11_UART_Transmit;
-  queue[26] = DHT11_UART_Transmit;
-  queue[37] = DHT11_UART_Transmit;
-  // queue[2] = LCD_Display;
-  queue[3] = Read_HCSR04_Sensor;
-
-  // for(uint8_t i = 5; i <= 44; ){
-	//   queue[i] = LCD_Display;
-	//   if(i == 13 || i == 24 || i == 35){
-	// 	  i = i + 3;
-	//   }
-	//   else{
-	// 	  i = i + 2;
-	//   }
-  // }
-
-  for(uint8_t i = 6; i <= 43; ){
-  	  queue[i] = Read_HCSR04_Sensor;
-  	  if(i == 14 || i == 25 || i == 36){
-  		  i = i + 3;
-  	  }
-  	  else{
-  		  i = i + 2;
-  	  }
-    }
-
-  for(uint8_t i = 0; i <= 45 ; i++){
-	  execute_time[i] = 500 - 1;
-  }
-
-  execute_time[1] = 1000  - 1;
-
-  for(uint8_t i = 4; i <= 37; i = i + 11){
-	  execute_time[i] = 1000  - 1;
-  };
-
-  for(uint8_t i = 7; i <= 44; ){
-    	  execute_time[i] = 1500 - 1;
-    	  if(i == 13 || i == 24 || i == 35){
-    		  i = i + 5;
-    	  }
-    	  else{
-    		  i = i + 2;
-    	  }
-   };
-
-//  lcd16x2_init_4bits(GPIOB, RS_Pin, E_Pin, GPIOA, GPIO_PIN_3, GPIO_PIN_4, GPIO_PIN_5, GPIO_PIN_6);
-
+	CLCD_I2C_Init(&LCD1,&hi2c1,0x4e,16,2);
+	CLCD_I2C_SetCursor(&LCD1, 0, 0);
+	CLCD_I2C_WriteString(&LCD1,"Temp");
+	CLCD_I2C_SetCursor(&LCD1, 6, 0);
+	CLCD_I2C_WriteString(&LCD1,"Humi");
+	CLCD_I2C_SetCursor(&LCD1, 12, 0);
+	CLCD_I2C_WriteString(&LCD1,"Dist");
   HAL_TIM_Base_Start_IT(&htim4);
   HAL_TIM_Base_Start(&htim1);
   __HAL_TIM_ENABLE_IT(&htim4, TIM_IT_UPDATE);
@@ -938,6 +911,40 @@ void SystemClock_Config(void)
   {
     Error_Handler();
   }
+}
+
+/**
+  * @brief I2C1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_I2C1_Init(void)
+{
+
+  /* USER CODE BEGIN I2C1_Init 0 */
+
+  /* USER CODE END I2C1_Init 0 */
+
+  /* USER CODE BEGIN I2C1_Init 1 */
+
+  /* USER CODE END I2C1_Init 1 */
+  hi2c1.Instance = I2C1;
+  hi2c1.Init.ClockSpeed = 100000;
+  hi2c1.Init.DutyCycle = I2C_DUTYCYCLE_2;
+  hi2c1.Init.OwnAddress1 = 0;
+  hi2c1.Init.AddressingMode = I2C_ADDRESSINGMODE_7BIT;
+  hi2c1.Init.DualAddressMode = I2C_DUALADDRESS_DISABLE;
+  hi2c1.Init.OwnAddress2 = 0;
+  hi2c1.Init.GeneralCallMode = I2C_GENERALCALL_DISABLE;
+  hi2c1.Init.NoStretchMode = I2C_NOSTRETCH_DISABLE;
+  if (HAL_I2C_Init(&hi2c1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN I2C1_Init 2 */
+
+  /* USER CODE END I2C1_Init 2 */
+
 }
 
 /**
@@ -1251,6 +1258,12 @@ void LCDTask(void const * argument)
   uint32_t time_now = 0;
   uint32_t time_pre = 0;
 
+  uint32_t temp_lcd = 0;
+  uint32_t humi_lcd = 0;
+  uint32_t dist_lcd = 0;
+
+  char x[20];
+
   osEvent Recv_Task_data; // nhận dữ liệu từ Queue01
   while(1)
   {
@@ -1269,15 +1282,15 @@ void LCDTask(void const * argument)
     myQueueData_t *data = Recv_Task_data.value.p; // con tr�? đến cấu trúc lưu nhiệt độ, độ ẩm, khoảng cách
     if(data->id == 1) // Nhận nhiệt độ độ ẩm
     {
-      Lcd_temp = data->temp;
-      Lcd_humi = data->humi;
+      temp_lcd = data->temp;
+      humi_lcd = data->humi;
 
       // temp = data->temp;
       // humi = data->humi;
     }
     else              // Nhận Khoảng cách
     {
-      Lcd_dist = data->distance;
+      dist_lcd = data->distance;
 
       //dist = data->distance;
     }
@@ -1286,13 +1299,21 @@ void LCDTask(void const * argument)
     Recv_Task_data = osMailGet(myQueueDataHandle, 0);
 // Xử lý hiển thị
     }
-    // lcd_clear();
-		// lcd_put_cur(0,3);
-		// lcd_send_string("HELLO LCD"); 
-		// osDelay(200);
-		// lcd_put_cur(1,0);
-		// lcd_send_string("hlelele");
-    osDelay(200);
+
+    Lcd_temp = temp_lcd;
+    Lcd_humi = humi_lcd;
+    Lcd_dist = dist_lcd;
+
+   sprintf(x,"%d",temp_lcd); 
+	CLCD_I2C_SetCursor(&LCD1, 0, 1);
+	CLCD_I2C_WriteString(&LCD1,x);
+  sprintf(x,"%d",humi_lcd); 
+	CLCD_I2C_SetCursor(&LCD1, 6, 1);
+	CLCD_I2C_WriteString(&LCD1,x);
+  sprintf(x,"%d",dist_lcd);
+	CLCD_I2C_SetCursor(&LCD1, 12, 1);
+	CLCD_I2C_WriteString(&LCD1,x);
+  osDelay(1000);
   }
 }
 // // Task xử lý khi nhân được ngắt UART
@@ -1442,6 +1463,28 @@ void Uart_ThresholdTask(void const * argument)
     {
       pre_command = command;
       // Xử lý command
+      switch (command) {
+		case 0x01:
+			/* some codes */
+
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+      break;
+		
+		case 0x02:
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_SET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_RESET);
+		  break;
+    case 0x03:
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_13, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_14, GPIO_PIN_RESET);
+			HAL_GPIO_WritePin(GPIOC, GPIO_PIN_15, GPIO_PIN_SET);
+		  break;
+		default:
+		  break;
+	}
 
 
     }
@@ -1475,7 +1518,7 @@ void Uart_ThresholdTask(void const * argument)
     Threshold_hum = humi1;
     Threshold_dist = dist1;
 
-if((xTaskGetTickCount() - time_temp) > Frequency_Temp -2 ) // gửi sau chu kì Frequency_Dist
+if((xTaskGetTickCount() - time_temp) > Frequency_Temp -4 ) // gửi sau chu kì Frequency_Dist
     {    
       time_temp = xTaskGetTickCount();
   memset(TxBuffer, 0, TransmitBuff_SIZE);
@@ -1552,19 +1595,21 @@ void StartDefaultTask(void const * argument)
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+		vTaskSuspend(NULL);
+    osDelay(1000);
   }
   /* USER CODE END 5 */
 }
 
 /**
   * @brief  Period elapsed callback in non blocking mode
-  * @note   This function is called  when TIM2 interrupt took place, inside
+  * @note   This function is called  when TIM3 interrupt took place, inside
   * HAL_TIM_IRQHandler(). It makes a direct call to HAL_IncTick() to increment
   * a global variable "uwTick" used as application time base.
   * @param  htim : TIM handle
   * @retval None
   */
+
 
 /**
   * @brief  This function is executed in case of error occurrence.
