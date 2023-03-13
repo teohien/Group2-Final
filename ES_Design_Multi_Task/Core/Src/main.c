@@ -546,7 +546,7 @@ int main(void)
   osThreadDef(ButtonTaskHandleH, ButtonTask, osPriorityNormal, 0, 128);
   ButtonTaskHandle  = osThreadCreate(osThread(ButtonTaskHandleH), NULL);
 
-  osThreadDef(Uart_ThresholdTaskH, Uart_ThresholdTask, osPriorityNormal, 0, 128);
+  osThreadDef(Uart_ThresholdTaskH, Uart_ThresholdTask, osPriorityAboveNormal, 0, 128);
   Uart_ThresholdTaskHandle  = osThreadCreate(osThread(Uart_ThresholdTaskH), NULL);
 
   osThreadDef(HCSR04TaskH, HCSR04Task, osPriorityNormal, 0, 128);
