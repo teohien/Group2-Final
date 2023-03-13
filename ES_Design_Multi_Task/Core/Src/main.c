@@ -98,7 +98,7 @@ uint32_t IC_Val2 = 0;
 uint32_t Difference = 0;
 uint8_t Is_First_Captured = 0;  // is the first value captured ?
 //uint8_t distance  = 0;
-uint32_t distance  = 0;
+uint8_t distance  = 0;
 
 /* Buffer Array */
 uint8_t RxBuffer[ReceiveBuff_SIZE];
@@ -907,7 +907,7 @@ void HCSR04Task(void const * argument)
   msg1->distance = distance;      
   osMailPut(myQueueUart_ThresholdDataHandle, msg1);
 
-   osDelay(2900);
+   osDelay(100);
 
    }
 }
@@ -920,9 +920,9 @@ void LCDTask(void const * argument)
   uint32_t time_now = 0;
   uint32_t time_pre = 0;
 
-  uint32_t temp_lcd = 0;
-  uint32_t humi_lcd = 0;
-  uint32_t dist_lcd = 0;
+  uint8_t temp_lcd = 0;
+  uint8_t humi_lcd = 0;
+  uint8_t dist_lcd = 0;
 
   char x[20];
 
@@ -967,13 +967,13 @@ void LCDTask(void const * argument)
 	CLCD_I2C_WriteString(&LCD1,"Humi");
 	CLCD_I2C_SetCursor(&LCD1, 12, 0);
 	CLCD_I2C_WriteString(&LCD1,"Dist");
-	sprintf(x,"%d",temp_lcd); 
+	sprintf(x,"%doC",temp_lcd); 
 	CLCD_I2C_SetCursor(&LCD1, 0, 1);
 	CLCD_I2C_WriteString(&LCD1,x);
-  sprintf(x,"%d",humi_lcd); 
+  sprintf(x,"%dRH",humi_lcd); 
 	CLCD_I2C_SetCursor(&LCD1, 6, 1);
 	CLCD_I2C_WriteString(&LCD1,x);
-  sprintf(x,"%d",dist_lcd);
+  sprintf(x,"%dcm",(int)dist_lcd);
 	CLCD_I2C_SetCursor(&LCD1, 12, 1);
 	CLCD_I2C_WriteString(&LCD1,x);
     }
@@ -982,7 +982,7 @@ void LCDTask(void const * argument)
     Lcd_humi = humi_lcd;
     Lcd_dist = dist_lcd;
 
-  osDelay(500);
+  osDelay(100);
   }
 }
 // // Task xử lý khi nhân được ngắt UART
